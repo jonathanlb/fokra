@@ -1,17 +1,39 @@
 <template>
   <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div v-if="!authenticated">
+		<login loginMsg="Please log in..." />
+	</div>
+	<div v-else>
+		<activity-chooser title="test"/>
+		<timeline-viewer/>
+	</div>
 </template>
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
+<script lang="ts">
+import { Options, Vue } from 'vue-class-component';
+import ActivityChooser from './components/ActivityChooser.vue';
+import Login from './components/Login.vue';
+import TimelineViewer from './components/TimelineViewer.vue';
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
+function isAuth(): boolean {
+	let userName = window.localStorage.getItem('userName');
+	let password = window.localStorage.getItem('password');
+	return userName === 'Jonathan' && password === 'ee';
 }
+
+@Options({
+  components: {
+		ActivityChooser,
+		Login,
+		TimelineViewer,
+  },
+	data() {
+		return {
+			authenticated: isAuth(),
+		};
+	},
+})
+export default class App extends Vue {}
 </script>
 
 <style>
