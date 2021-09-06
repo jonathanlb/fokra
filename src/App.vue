@@ -4,13 +4,14 @@
 		<login loginMsg="Please log in..." />
 	</div>
 	<div v-else>
-		<activity-chooser title="test"/>
-		<timeline-viewer/>
+		<activity-chooser v-bind:activities="activities" />
+		<timeline-viewer v-bind:activities="activities" />
 	</div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
+import { ActivitiesFromServer } from './Activities';
 import ActivityChooser from './components/ActivityChooser.vue';
 import Login from './components/Login.vue';
 import TimelineViewer from './components/TimelineViewer.vue';
@@ -29,6 +30,7 @@ function isAuth(): boolean {
   },
 	data() {
 		return {
+			activities: new ActivitiesFromServer('http://192.168.1.19:8000'),
 			authenticated: isAuth(),
 		};
 	},

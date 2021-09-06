@@ -6,12 +6,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-
-type Activity = {
-	timestamp: number;
-	actionId: number;
-};
+import { Activity, ActivityInterface } from '../Activities';
+import { defineComponent, PropType } from 'vue';
 
 const DISPLAY_NUM_DAYS = 7;
 
@@ -21,7 +17,7 @@ export default defineComponent({
 		let now = new Date();
 		let then = new Date().setDate(now.getDate() - DISPLAY_NUM_DAYS);
     return {
-			activities: [] as Array<Activity>,
+			performedActivities: [] as Array<Activity>,
 			actRows: {} as Record<number, number>,
 			actColors: {} as Record<number, string>,
 			end: now.getTime(),
@@ -38,11 +34,11 @@ export default defineComponent({
 			}
 			let ctx = ctxP as CanvasRenderingContext2D;
 			let activityMargin = 1;
-			let activitySet = new Set(this.activities.map(a => a.actionId));
+			let activitySet = new Set(this.performedActivities.map(a => a.key));
 			let activityHeight = canvas.height / activitySet.size - activityMargin;
 			let activityWidth = (canvas.width / DISPLAY_NUM_DAYS) * 0.6;
 			let timeScale = (canvas.width - activityWidth - activityMargin) / (this.end - this.start);
-			this.activities.forEach((a: Activity) => {
+			this.performedActivities.forEach((a: Activity) => {
 				ctx.fillStyle = this.getActivityColor(a);
 				let row = this.getActivityRow(a);
 				let aTop = row * (activityHeight + activityMargin);
@@ -71,50 +67,44 @@ export default defineComponent({
 
 		/*eslint-disable no-unused-vars */
 		getActivityColor(a: Activity): string {
-			let color = this.actColors[a.actionId];
+			let color = this.actColors[a.key];
 			if (color === undefined) {
 				color = `#${Math.floor(Math.random()*16777215).toString(16)}`;
-				this.actColors[a.actionId] = color;
+				this.actColors[a.key] = color;
 			}
 			return color;
 		},
 
 		/*eslint-disable no-unused-vars */
 		getActivityRow(a: Activity): number {
-			let row = this.actRows[a.actionId];
+			let row = this.actRows[a.key];
 			if (row === undefined) {
 				row = this.rowCount;
 				this.rowCount += 1;
-				this.actRows[a.actionId] = row;
+				this.actRows[a.key] = row;
 			}
 			return row;
 		},
   },
+	props: {
+		activities: {
+			type: Object as PropType<ActivityInterface>,
+			required: true,
+		}
+	},
 	beforeMount() {
 		let tv = this;
 		let maxEvents = 1000;
 
-		let handleError = (e: Error) => {
-			console.error('get activity', e);
-		}
-
-		fetch(`http://192.168.1.19:8000/activity/get/${this.start}/${this.end}/${maxEvents}`)
-			.then(resp => {
-				if (resp.status !== 200) {
-					handleError(new Error(`${resp.status}`));
-				}
-				return resp.json();
-			})
-			.then(data => {
-				tv.activities = data.map((x: Array<number>) => {
-					return {
-						timestamp: x[0],
-						actionId: x[1],
-					};
-				});
+		this.activities.getActivities(this.start, this.end, maxEvents).
+			then((data: Array<Activity>) => {
+				tv.performedActivities = data;
 				tv.drawActivities();
 			})
-			.catch(handleError);
+			.catch((e: Error) => {
+				// TODO: handle this
+				console.error('get activity', e);
+			});
 	},
 });
 </script>

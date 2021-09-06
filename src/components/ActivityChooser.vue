@@ -19,12 +19,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-
-type Activity = {
-	name: string;
-	key: number;
-};
+import { Activity, ActivityInterface } from '../Activities';
+import { defineComponent, PropType } from 'vue';
 
 const EMPTY_ACTIVITY = { name: '', key: 0 };
 const SUBMIT_SUCCESS = 'Huzzah!';
@@ -41,11 +37,6 @@ export default defineComponent({
     };
   },
   methods: {
-		addActivity(name: string, key: number) {
-			this.activityOptions.push({ name, key });
-			this.activityOptions.sort(
-				(a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
-		},
 		ok() {
 			this.submitted = false;
 		},
@@ -59,26 +50,30 @@ export default defineComponent({
 			ac.submitted = true;
 			if (ac.selectedActivity !== EMPTY_ACTIVITY) {
 				let activityId = ac.selectedActivity?.key;
-				fetch(`http://192.168.1.19:8000/activity/log/${activityId}`)
-					.then(resp => {
-						if (resp.status === 200) {
-							ac.submittedMsg = SUBMIT_SUCCESS;
-							ac.selectedActivity = EMPTY_ACTIVITY;
-						} else {
-							console.log('errro', resp);
-							handleError(new Error(`${resp.status}`));
-						}})
+				this.activities.logActivity(activityId)
+					.then(() => {
+						ac.submittedMsg = SUBMIT_SUCCESS;
+						ac.selectedActivity = EMPTY_ACTIVITY;
+					})
 					.catch(handleError);
 			}
     },
   },
+	props: {
+		activities: {
+			type: Object as PropType<ActivityInterface>,
+			required: true,
+		}
+	},
 	beforeMount() {
 		let ac = this;
-		fetch('http://192.168.1.19:8000/action/get/20/0')
-			.then(resp => resp.json())
-			.then(activities => activities.forEach(
-				(keyName: Array<number|string>) =>
-					ac.addActivity(keyName[1] as string, keyName[0] as number)));
+		this.activities.getActions().
+			then((activities: Array<Activity>) => {
+				activities.sort(
+					(a: Activity, b: Activity) => 
+						a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+				ac.activityOptions = activities;
+			});
 	},
 });
 </script>
