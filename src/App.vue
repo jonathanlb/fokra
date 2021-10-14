@@ -30,7 +30,7 @@ function isAuth(): boolean {
   },
 	data() {
 		return {
-			activities: new ActivitiesFromServer('http://192.168.1.19:8000'),
+			activities: new ActivitiesFromServer('http://192.168.1.9:8000'),
 			authenticated: isAuth(),
 		};
 	},

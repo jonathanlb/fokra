@@ -55,7 +55,7 @@ export default defineComponent({
 			activitySet.forEach((a: number) => {
 				// let row = this.getActivityRow(a);
 				let div = document.createElement('div');
-				div.innerHTML = `${a}`;
+				div.innerHTML = `${this.activities.getActionName(a)}`;
 				div.style.color = this.actColors[a];
 				div.style.lineHeight = `${activityHeight}px`;
 				div.style.margin = `${activityMargin}px`;

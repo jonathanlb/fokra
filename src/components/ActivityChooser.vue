@@ -47,8 +47,8 @@ export default defineComponent({
 				ac.submittedMsg = `${SUBMIT_ERROR} ${error.message}`;
 			}
 
-			ac.submitted = true;
-			if (ac.selectedActivity !== EMPTY_ACTIVITY) {
+			if (ac.selectedActivity.key !== EMPTY_ACTIVITY.key) {
+				ac.submitted = true;
 				let activityId = ac.selectedActivity?.key;
 				this.activities.logActivity(activityId)
 					.then(() => {

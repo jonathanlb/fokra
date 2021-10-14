@@ -5,6 +5,7 @@ export type Activity = {
 };
 
 export interface ActivityInterface {
+	getActionName(key: number): string,
 	getActions(): Promise<Array<Activity>>;
 	getActivities(start: number, end: number, maxEvents: number): Promise<Array<Activity>>;
 	logActivity(aid: number): Promise<void>;
@@ -12,14 +13,19 @@ export interface ActivityInterface {
 
 export class ActivitiesFromServer implements ActivityInterface {
 	fetchPrefix: string;
-	actions: Record<number, Activity> = {};
+	actionNames: Record<number, string> = {};
 
 	constructor(fetchPrefix: string) {
 		this.fetchPrefix = fetchPrefix;
 	}
 
+	getActionName(key: number): string {
+		return this.actionNames[key] || key.toString(); // XXX
+	}
+
 	getActions(): Promise<Array<Activity>> {
 		// TODO: handle pages
+		// TODO: memoize?
 		return fetch(`${this.fetchPrefix}/action/get/20/0`).
 			then(resp => resp.json()).
 			then(activities => activities.map(
@@ -28,7 +34,7 @@ export class ActivitiesFromServer implements ActivityInterface {
 					const name = keyName[1] as string;
 					const timestamp = 0;
 
-					this.actions[key] = { key, name, timestamp };
+					this.actionNames[key] = name;
 					return { key, name, timestamp };
 				}));
 	}
@@ -45,7 +51,7 @@ export class ActivitiesFromServer implements ActivityInterface {
 				(x: Array<number>) => {
 					const timestamp = x[0];
 					const key = x[1];
-					const name = this.actions[key]?.name;
+					const name = this.actionNames[key] as string;
 					return { key, timestamp, name };
 				}));
 	}
