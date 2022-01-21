@@ -1,11 +1,11 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <div v-if="!authenticated">
-		<login loginMsg="Please log in..." />
+  <div v-if="!isAuthenticated">
+		<login loginMsg="Please log in..." v-bind:onLogin="onLogin" />
 	</div>
 	<div v-else>
 		<activity-chooser v-bind:activities="activities" />
 		<timeline-viewer v-bind:activities="activities" />
+		<logout v-bind:onLogin="onLogin" />
 	</div>
 </template>
 
@@ -13,27 +13,30 @@
 import { Options, Vue } from 'vue-class-component';
 import { ActivitiesFromServer } from './Activities';
 import ActivityChooser from './components/ActivityChooser.vue';
+import { config } from './Config';
 import Login from './components/Login.vue';
+import Logout from './components/Logout.vue';
 import TimelineViewer from './components/TimelineViewer.vue';
-
-function isAuth(): boolean {
-	let userName = window.localStorage.getItem('userName');
-	let password = window.localStorage.getItem('password');
-	return userName === 'Jonathan' && password === 'ee';
-}
 
 @Options({
   components: {
 		ActivityChooser,
 		Login,
+		Logout,
 		TimelineViewer,
   },
 	data() {
 		return {
-			activities: new ActivitiesFromServer('http://192.168.1.9:8000'),
-			authenticated: isAuth(),
+			activities: new ActivitiesFromServer(`${config.server}:${config.port}`),
+			isAuthenticated: false,
 		};
 	},
+	methods: {
+		onLogin(isAuth: boolean) {
+			this.isAuthenticated = isAuth;
+			this.$forceUpdate();
+		}
+	}
 })
 export default class App extends Vue {}
 </script>
