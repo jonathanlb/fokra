@@ -93,13 +93,12 @@ export default defineComponent({
 		}
 	},
 	beforeMount() {
-		let tv = this;
-		let maxEvents = 1000;
+		const maxEvents = 1000;
 
 		this.activities.getActivities(this.start, this.end, maxEvents).
 			then((data: Array<Activity>) => {
-				tv.performedActivities = data;
-				tv.drawActivities();
+				this.performedActivities = data;
+				this.drawActivities();
 			})
 			.catch((e: Error) => {
 				// TODO: handle this

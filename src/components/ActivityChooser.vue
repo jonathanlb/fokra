@@ -41,19 +41,17 @@ export default defineComponent({
 			this.submitted = false;
 		},
     logActivity() {
-			let ac = this;
-
 			let handleError = (error: Error) => {
-				ac.submittedMsg = `${SUBMIT_ERROR} ${error.message}`;
+				this.submittedMsg = `${SUBMIT_ERROR} ${error.message}`;
 			}
 
-			if (ac.selectedActivity.key !== EMPTY_ACTIVITY.key) {
-				ac.submitted = true;
-				let activityId = ac.selectedActivity?.key;
+			if (this.selectedActivity.key !== EMPTY_ACTIVITY.key) {
+				this.submitted = true;
+				let activityId = this.selectedActivity?.key;
 				this.activities.logActivity(activityId)
 					.then(() => {
-						ac.submittedMsg = SUBMIT_SUCCESS;
-						ac.selectedActivity = EMPTY_ACTIVITY;
+						this.submittedMsg = SUBMIT_SUCCESS;
+						this.selectedActivity = EMPTY_ACTIVITY;
 					})
 					.catch(handleError);
 			}
@@ -66,13 +64,12 @@ export default defineComponent({
 		}
 	},
 	beforeMount() {
-		let ac = this;
 		this.activities.getActions().
 			then((activities: Array<Activity>) => {
 				activities.sort(
 					(a: Activity, b: Activity) => 
 						a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
-				ac.activityOptions = activities;
+				this.activityOptions = activities;
 			});
 	},
 });
