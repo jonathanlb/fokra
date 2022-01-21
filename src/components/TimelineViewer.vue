@@ -7,6 +7,7 @@
 
 <script lang="ts">
 import { Activity, ActivityInterface } from '../Activities';
+import { ServerResponseError } from '../Login';
 import { defineComponent, PropType } from 'vue';
 
 const DISPLAY_NUM_DAYS = 7;
@@ -90,7 +91,11 @@ export default defineComponent({
 		activities: {
 			type: Object as PropType<ActivityInterface>,
 			required: true,
-		}
+		},
+		onLogin: { // eslint-disable-next-line no-unused-vars
+			type: Function as PropType<(isAuth: boolean) => void>,
+			required: true,
+		},
 	},
 	beforeMount() {
 		const maxEvents = 1000;
@@ -99,10 +104,12 @@ export default defineComponent({
 			then((data: Array<Activity>) => {
 				this.performedActivities = data;
 				this.drawActivities();
-			})
-			.catch((e: Error) => {
-				// TODO: handle this
-				console.error('get activity', e);
+			}).catch((e: Error) => {
+				if (e instanceof ServerResponseError) {
+					this.onLogin(false);
+				} else {
+					console.error('unexpected error, getActivities', e);
+				}
 			});
 	},
 });

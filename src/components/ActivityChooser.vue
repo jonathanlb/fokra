@@ -20,6 +20,7 @@
 
 <script lang="ts">
 import { Activity, ActivityInterface } from '../Activities';
+import { ServerResponseError } from '../Login';
 import { defineComponent, PropType } from 'vue';
 
 const EMPTY_ACTIVITY = { name: '', key: 0 };
@@ -61,7 +62,11 @@ export default defineComponent({
 		activities: {
 			type: Object as PropType<ActivityInterface>,
 			required: true,
-		}
+		},
+		onLogin: { // eslint-disable-next-line no-unused-vars
+			type: Function as PropType<(isAuth: boolean) => void>,
+			required: true,
+		},
 	},
 	beforeMount() {
 		this.activities.getActions().
@@ -70,7 +75,13 @@ export default defineComponent({
 					(a: Activity, b: Activity) => 
 						a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
 				this.activityOptions = activities;
-			});
+		}).catch(e => {
+			if (e instanceof ServerResponseError) {
+				this.onLogin(false);
+			} else {
+				console.error('unexpected error, getActions', e);
+			}
+		});
 	},
 });
 </script>

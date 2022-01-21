@@ -1,3 +1,5 @@
+import { ServerResponseError } from './Login';
+
 export type Activity = {
 	key: number;
 	name: string;
@@ -31,7 +33,12 @@ export class ActivitiesFromServer implements ActivityInterface {
 			{
 				method: 'GET',
 				credentials: 'include'
-			}).then(resp => resp.json()).
+			}).then(resp => {
+				if (!resp.ok) {
+					throw new ServerResponseError(resp);
+				}
+				return resp.json()
+			}).
 			then(activities => activities.map(
 				(keyName: Array<number|string>) => { 
 					const key = keyName[0] as number; 
@@ -41,7 +48,6 @@ export class ActivitiesFromServer implements ActivityInterface {
 					this.actionNames[key] = name;
 					return { key, name, timestamp };
 				}));
-			// XXX TODO: handle error
 	}
 
 	getActivities(start: number, end: number, maxEvents: number): Promise<Array<Activity>> {
@@ -51,8 +57,8 @@ export class ActivitiesFromServer implements ActivityInterface {
 				method: 'GET',
 				credentials: 'include'
 			}).then(resp => {
-				if (resp.status !== 200) {
-					throw new Error(resp.status.toString());
+				if (!resp.ok) {
+					throw new ServerResponseError(resp);
 				}
 				return resp.json();
 			}).
@@ -63,7 +69,6 @@ export class ActivitiesFromServer implements ActivityInterface {
 					const name = this.actionNames[key] as string;
 					return { key, timestamp, name };
 				}));
-			// XXX TODO: handle error
 	}
 
 	logActivity(aid: number): Promise<void> {
@@ -73,8 +78,8 @@ export class ActivitiesFromServer implements ActivityInterface {
 				method: 'GET',
 				credentials: 'include'
 			}).then(resp => {
-				if (resp.status !== 200) {
-					throw new Error(`${resp.status}`);
+				if (!resp.ok) {
+					throw new ServerResponseError(resp);
 				}
 			});
 	}

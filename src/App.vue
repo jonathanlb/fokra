@@ -3,8 +3,8 @@
 		<login loginMsg="Please log in..." v-bind:onLogin="onLogin" />
 	</div>
 	<div v-else>
-		<activity-chooser v-bind:activities="activities" />
-		<timeline-viewer v-bind:activities="activities" />
+		<activity-chooser v-bind:activities="activities" v-bind:onLogin="onLogin" />
+		<timeline-viewer v-bind:activities="activities" v-bind:onLogin="onLogin" />
 		<logout v-bind:onLogin="onLogin" />
 	</div>
 </template>
@@ -28,7 +28,7 @@ import TimelineViewer from './components/TimelineViewer.vue';
 	data() {
 		return {
 			activities: new ActivitiesFromServer(`${config.server}:${config.port}`),
-			isAuthenticated: false,
+			isAuthenticated: true, // assume cookies carry over....
 		};
 	},
 	methods: {

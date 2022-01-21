@@ -1,4 +1,11 @@
-export class ServerLogin {
+export interface Login {
+	isAuth(): boolean;
+	reset(): void;
+	submitLogin(userName: string, password: string): Promise<void>;
+	submitLogout(): Promise<void>;
+}
+
+export class ServerLogin implements Login {
 	server: string;
 	port: number;
 	authenticated: boolean;
@@ -45,7 +52,7 @@ export class ServerLogin {
 	}
 }
 
-export class DummyLogin {
+export class DummyLogin implements Login {
 	isAuth(): boolean {
 		const userName = window.localStorage.getItem('userName');
 		const password = window.localStorage.getItem('password');
@@ -64,5 +71,16 @@ export class DummyLogin {
 
 	async submitLogout(): Promise<void> {
 		this.reset();
+	}
+}
+
+export class ServerResponseError extends Error {
+	status: number;
+	msg: string;
+
+	constructor(r: Response) {
+		super();
+		this.status = r.status;
+		this.msg = r.statusText;
 	}
 }
